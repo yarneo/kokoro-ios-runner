@@ -127,6 +127,7 @@ if [ -n "$KOKORO_BUILD_NUMBER" ]; then
       sudo xcode-select --switch /Applications/Xcode_${xcodes[i]}.app/Contents/Developer
       xcodebuild -version
       xcrun simctl list
+      xcodebuild -showsdks
       # Resolves the following crash when switching Xcode versions:
       # "Failed to locate a valid instance of CoreSimulatorService in the bootstrap"
       launchctl remove com.apple.CoreSimulator.CoreSimulatorService || true
