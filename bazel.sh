@@ -108,7 +108,7 @@ invoke_bazel() {
   fi
 
   bazel clean
-  bazel $ACTION $TARGET --xcode_version $xcode_version --ios_sdk_version $sdk_version $extra_args $verbosity_flags "${POSITIONAL[@]:3}"
+  bazel $ACTION $TARGET --xcode_version $xcode_version --ios_sdk_version $sdk_version --ios_simulator_device "iPhone 6" $extra_args $verbosity_flags "${POSITIONAL[@]:3}"
 }
 
 if [ -n "$KOKORO_BUILD_NUMBER" ]; then
