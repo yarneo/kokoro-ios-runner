@@ -93,6 +93,7 @@ TARGET="$2"
 
 invoke_bazel() {
   xcode_version="$1"
+  sdk_version="$2"
   extra_args=""
   if [ "$ACTION" == "build" ]; then
     echo "🏗️  $TARGET with Xcode $xcode_version..."
@@ -107,27 +108,23 @@ invoke_bazel() {
   fi
 
   bazel clean
-  bazel $ACTION $TARGET --xcode_version $xcode_version $extra_args $verbosity_flags "${POSITIONAL[@]:2}"
+  bazel $ACTION $TARGET --xcode_version $xcode_version --ios_sdk_version $sdk_version $extra_args $verbosity_flags "${POSITIONAL[@]:3}"
 }
 
 if [ -n "$KOKORO_BUILD_NUMBER" ]; then
+  xcodes = ( 8.3.3 9.0 9.1 9.2 )
+  sdks = ( 10.3 11.0 11.1 11.2 )
   # Runs our tests on every available Xcode installation.
-  ls /Applications/ | grep "Xcode" | while read -r xcode_path; do
-    xcode_version=$(cat /Applications/$xcode_path/Contents/version.plist \
-      | grep "CFBundleShortVersionString" -A1 \
-      | grep string \
-      | cut -d'>' -f2 \
-      | cut -d'<' -f1)
+  for ((i=0; i<${#xcodes[*]}; i++));
+  do
     if [ -n "$MIN_XCODE_VERSION" ]; then
-      xcode_version_as_number="$(version_as_number $xcode_version)"
-
-      if [ "$xcode_version_as_number" -lt "$MIN_XCODE_VERSION" ]; then
+      if [ "${xcodes[i]}" -lt "$MIN_XCODE_VERSION" ]; then
         continue
       fi
     fi
 
     if [ "$ACTION" == "test" ]; then
-      sudo xcode-select --switch /Applications/$xcode_path/Contents/Developer
+      sudo xcode-select --switch /Applications/Xcode${xcodes[i]}/Contents/Developer
       xcodebuild -version
 
       # Resolves the following crash when switching Xcode versions:
@@ -135,7 +132,7 @@ if [ -n "$KOKORO_BUILD_NUMBER" ]; then
       launchctl remove com.apple.CoreSimulator.CoreSimulatorService || true
     fi
 
-    invoke_bazel $xcode_version
+    invoke_bazel ${xcodes[i]} ${sdks[i]}
   done
 else
   # Run against whichever Xcode is currently selected.
