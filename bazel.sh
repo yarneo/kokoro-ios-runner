@@ -112,8 +112,8 @@ invoke_bazel() {
 }
 
 if [ -n "$KOKORO_BUILD_NUMBER" ]; then
-  xcodes = ( 8.3.3 9.0 9.1 9.2 )
-  sdks = ( 10.3 11.0 11.1 11.2 )
+  xcodes=( 8.3.3 9.0 9.1 9.2 )
+  sdks=( 10.3 11.0 11.1 11.2 )
   # Runs our tests on every available Xcode installation.
   for ((i=0; i<${#xcodes[*]}; i++));
   do
