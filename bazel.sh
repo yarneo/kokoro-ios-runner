@@ -124,7 +124,7 @@ if [ -n "$KOKORO_BUILD_NUMBER" ]; then
     fi
 
     if [ "$ACTION" == "test" ]; then
-      sudo xcode-select --switch /Applications/Xcode${xcodes[i]}/Contents/Developer
+      sudo xcode-select --switch /Applications/Xcode_${xcodes[i]}/Contents/Developer
       xcodebuild -version
       xcrun simctl list
       # Resolves the following crash when switching Xcode versions:
