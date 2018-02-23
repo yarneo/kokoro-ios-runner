@@ -131,7 +131,7 @@ if [ -n "$KOKORO_BUILD_NUMBER" ]; then
       xcrun simctl create 'iPhone 6' com.apple.CoreSimulator.SimDeviceType.iPhone-6 ${sdks[i]}
       # Resolves the following crash when switching Xcode versions:
       # "Failed to locate a valid instance of CoreSimulatorService in the bootstrap"
-      launchctl remove com.apple.CoreSimulator.CoreSimulatorService || true
+      # launchctl remove com.apple.CoreSimulator.CoreSimulatorService || true
     fi
 
     invoke_bazel ${xcodes[i]} ${sdks[i]}
