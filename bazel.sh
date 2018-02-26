@@ -111,6 +111,45 @@ invoke_bazel() {
   bazel $ACTION $TARGET --xcode_version $xcode_version --ios_sdk_version $sdk_version --ios_simulator_device "iPhone 6" $extra_args $verbosity_flags "${POSITIONAL[@]:3}"
 }
 
+# Usage: kill_process_mercilessly <regex>
+#
+# Tries to kill a process whose name ends with a string matching the given
+# regex and does so repeatedly if it shows any signs of restarting itself.
+function kill_process_mercilessly() {
+  local -r regex="$1"
+  local -r max_wait_secs=10
+
+  while : ; do
+    processname=$(ps -xc -o command | grep -E "${regex}$" | head -1)
+    if [[ -z "$processname" ]]; then
+      break
+    fi
+    killed=0
+    killtime="$(date +%s)"
+    waittime="$killtime"
+    set +e
+    until [[ "$killed" -ne 0 || \
+        "$(("$waittime" - "$killtime"))" -ge "$max_wait_secs" ]]; do
+      /usr/bin/killall -9 "$processname" >/dev/null 2>&1
+      killed="$?"
+      waittime="$(date +%s)"
+    done
+    set -e
+  done
+}
+
+# Usage: reset_simulator_service
+#
+# If you have a CI service that switches between multiple Xcode versions,
+# sometimes simulators used by the actool/ibtool daemon associated with the
+# previous version will not properly shut down after a switch. If the variable
+# SHOULD_RESET_SIMULATORS is set in your environment, then this function is
+# called at the beginning of actoolwrapper and ibtoolwrapper to force the
+# simulator process to be killed.
+function reset_simulator_service() {
+  kill_process_mercilessly "com\.apple\.CoreSimulatorService"
+}
+
 if [ -n "$KOKORO_BUILD_NUMBER" ]; then
   xcodes=( 8.3.3 9.0 9.1 9.2 )
   sdks=( 10.3 11.0 11.1 11.2 )
@@ -125,6 +164,7 @@ if [ -n "$KOKORO_BUILD_NUMBER" ]; then
 
     if [ "$ACTION" == "test" ]; then
       sudo xcode-select --switch /Applications/Xcode_${xcodes[i]}.app/Contents/Developer
+      reset_simulator_service
       xcodebuild -version
       xcrun simctl list
       xcodebuild -showsdks
