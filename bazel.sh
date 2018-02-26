@@ -162,17 +162,17 @@ if [ -n "$KOKORO_BUILD_NUMBER" ]; then
       fi
     fi
 
-    if [ "$ACTION" == "test" ]; then
+    # if [ "$ACTION" == "test" ]; then
       sudo xcode-select --switch /Applications/Xcode_${xcodes[i]}.app/Contents/Developer
       reset_simulator_service
       xcodebuild -version
       xcrun simctl list
       xcodebuild -showsdks
-      xcrun simctl create 'iPhone 6' com.apple.CoreSimulator.SimDeviceType.iPhone-6 com.apple.CoreSimulator.SimRuntime.iOS-10-3
+      # xcrun simctl create 'iPhone 6' com.apple.CoreSimulator.SimDeviceType.iPhone-6 com.apple.CoreSimulator.SimRuntime.iOS-10-3
       # Resolves the following crash when switching Xcode versions:
       # "Failed to locate a valid instance of CoreSimulatorService in the bootstrap"
-      # launchctl remove com.apple.CoreSimulator.CoreSimulatorService || true
-    fi
+      launchctl remove com.apple.CoreSimulator.CoreSimulatorService || true
+    # fi
 
     invoke_bazel ${xcodes[i]} ${sdks[i]}
   done
