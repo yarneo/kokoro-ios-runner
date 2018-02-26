@@ -165,8 +165,6 @@ if [ -n "$KOKORO_BUILD_NUMBER" ]; then
     # if [ "$ACTION" == "test" ]; then
       sudo xcode-select --switch /Applications/Xcode_${xcodes[i]}.app/Contents/Developer
       reset_simulator_service
-      killall "iOS Simulator"
-      killall "iPhone Simulator"
       killall "Simulator"
       xcodebuild -version
       xcrun simctl list
