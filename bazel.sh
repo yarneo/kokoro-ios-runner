@@ -114,21 +114,22 @@ invoke_bazel() {
 }
 
 if [ -n "$KOKORO_BUILD_NUMBER" ]; then
-  matrix = ( (8.3.3 8.1 "iPhone 5")
-             (8.3.3 9.3 "iPad Pro")
-             (9.2 10.3 "iPhone 7 Plus")
-             (9.2 11.2 "iPhone X") )
+  xcodes=( 8.3.3 8.3.3 9.2 9.2 )
+  sdks=( 8.1 9.3 10.3 11.2 )
+  simulator_devices=( "iPhone 5" "iPad Pro" "iPhone 7 Plus" "iPhone X" )
 
-  for ((i=0; i<${#matrix[*]}; i++));
+  for ((i=0; i<${#xcodes[*]}; i++));
   do
+    echo "key  : $i"
+    echo "value: ${array[$i]}"
     if [ -n "$MIN_XCODE_VERSION" ]; then
-      if [ "$(version_as_number ${matrix[i][0]})" -lt "$MIN_XCODE_VERSION" ]; then
+      if [ "$(version_as_number ${xcodes[i]})" -lt "$MIN_XCODE_VERSION" ]; then
         continue
       fi
     fi
 
     if [ "$ACTION" == "test" ]; then
-      sudo xcode-select --switch /Applications/Xcode_${matrix[i][0]}.app/Contents/Developer
+      sudo xcode-select --switch /Applications/Xcode_${xcodes[i]}.app/Contents/Developer
       xcodebuild -version
 
       # Resolves the following crash when switching Xcode versions:
@@ -136,7 +137,7 @@ if [ -n "$KOKORO_BUILD_NUMBER" ]; then
       launchctl remove com.apple.CoreSimulator.CoreSimulatorService || true
     fi
 
-    invoke_bazel ${matrix[i][0]} ${matrix[i][1]} ${matrix[i][2]}
+    invoke_bazel ${xcodes[i]} ${sdks[i]} ${simulator_devices[i]}
   done
 
 else
